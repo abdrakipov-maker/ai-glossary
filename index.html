@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>AI Глоссарий</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Syne:wght@600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:      var(--tg-theme-bg-color, #0a0a0f);
+  --bg2:     var(--tg-theme-secondary-bg-color, #111120);
+  --text:    var(--tg-theme-text-color, #e2e2ee);
+  --hint:    var(--tg-theme-hint-color, #6060a0);
+  --accent:  var(--tg-theme-button-color, #7c6fcd);
+  --accent-t:var(--tg-theme-button-text-color, #ffffff);
+  --link:    var(--tg-theme-link-color, #9d8ff0);
+  --border: rgba(255,255,255,.07);
+  --radius: 14px;
+  --mono: 'JetBrains Mono', monospace;
+  --sans: 'Syne', system-ui, sans-serif;
+}
+html,body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--sans);
+  min-height:100vh;
+  overscroll-behavior:none;
+  -webkit-font-smoothing:antialiased;
+}
+::-webkit-scrollbar{width:0}
+
+/* ── NAV ── */
+.nav{
+  display:flex;align-items:center;gap:10px;
+  padding:14px 16px 10px;
+  border-bottom:1px solid var(--border);
+  position:sticky;top:0;background:var(--bg);z-index:30;
+}
+.nav-logo{
+  width:36px;height:36px;border-radius:10px;flex-shrink:0;
+  background:linear-gradient(135deg,var(--accent),#3b2fa0);
+  display:flex;align-items:center;justify-content:center;font-size:20px;
+}
+.nav-title{font-size:17px;font-weight:700;flex:1;letter-spacing:-.3px}
+.nav-badge{
+  font-size:11px;padding:3px 9px;border-radius:20px;font-weight:600;
+  background:rgba(157,143,240,.15);color:var(--link);
+  border:1px solid rgba(157,143,240,.2);
+  display:flex;align-items:center;gap:4px;
+}
+
+/* ── STATS ── */
+.stats{display:flex;border-bottom:1px solid var(--border)}
+.stat{flex:1;text-align:center;padding:9px 0;border-right:1px solid var(--border)}
+.stat:last-child{border-right:none}
+.stat-n{font-size:18px;font-weight:700;color:var(--link)}
+.stat-l{font-size:10px;color:var(--hint);margin-top:1px;letter-spacing:.3px}
+
+/* ── SEARCH ── */
+.search-wrap{padding:10px 14px 0;position:sticky;top:56px;background:var(--bg);z-index:20}
+.search{
+  display:flex;align-items:center;gap:9px;
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:12px;padding:0 12px;height:42px;
+  transition:border-color .2s;
+}
+.search:focus-within{border-color:var(--accent)}
+.search svg{color:var(--hint);flex-shrink:0}
+.search input{
+  flex:1;background:none;border:none;outline:none;
+  color:var(--text);font-size:14px;font-family:var(--sans);
+}
+.search input::placeholder{color:var(--hint)}
+.clr{background:none;border:none;color:var(--hint);cursor:pointer;display:none;padding:2px}
+.clr.show{display:flex}
+
+/* ── FILTERS ── */
+.filters{display:flex;gap:6px;overflow-x:auto;padding:8px 14px;scrollbar-width:none}
+.filters::-webkit-scrollbar{display:none}
+.chip{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:20px;padding:5px 12px;font-size:12px;
+  color:var(--hint);cursor:pointer;white-space:nowrap;
+  transition:all .15s;flex-shrink:0;
+  font-family:var(--sans);font-weight:600;
+}
+.chip.on{background:var(--accent);border-color:var(--accent);color:var(--accent-t)}
+
+/* ── CARDS ── */
+.list{padding:0 12px 100px;display:flex;flex-direction:column;gap:7px}
+.card{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:var(--radius);overflow:hidden;cursor:pointer;
+  transition:border-color .2s;
+  animation:pop .18s ease;
+}
+@keyframes pop{from{opacity:0;transform:scale(.98)}to{opacity:1;transform:scale(1)}}
+.card.open{border-color:var(--accent)}
+.card-head{display:flex;align-items:center;gap:9px;padding:12px 13px}
+.dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.cname{flex:1;font-size:14px;font-weight:600;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.ai-pill{
+  display:inline-flex;align-items:center;gap:3px;
+  font-size:10px;padding:1px 7px;border-radius:20px;
+  background:rgba(157,143,240,.12);border:1px solid rgba(157,143,240,.22);
+  color:var(--link);font-weight:600;
+}
+.cat-pill{font-size:11px;padding:3px 9px;border-radius:20px;font-weight:600;flex-shrink:0}
+.chev{color:var(--hint);flex-shrink:0;transition:transform .2s}
+.card.open .chev{transform:rotate(180deg)}
+.card-body{border-top:1px solid var(--border);padding:11px 13px 13px}
+.def{font-size:13px;line-height:1.68;color:var(--hint)}
+.en{font-size:11px;color:var(--hint);opacity:.6;margin-top:7px;font-style:italic;font-family:var(--mono)}
+.tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:9px}
+.tag{
+  background:var(--bg);border-radius:5px;padding:2px 8px;
+  font-size:11px;color:var(--hint);font-family:var(--mono);
+  border:1px solid var(--border);
+}
+
+/* ── EMPTY ── */
+.empty{text-align:center;padding:50px 16px;color:var(--hint)}
+.empty-ico{font-size:44px;margin-bottom:12px;opacity:.25}
+
+/* ── BOTTOM SHEET ── */
+.sheet-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.75);
+  z-index:200;display:flex;align-items:flex-end;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .22s;
+  backdrop-filter:blur(3px);
+}
+.sheet-overlay.show{opacity:1;pointer-events:all}
+.sheet{
+  background:var(--bg);
+  border-radius:20px 20px 0 0;
+  border:1px solid var(--border);border-bottom:none;
+  padding:18px 16px 32px;
+  width:100%;max-height:88vh;overflow-y:auto;
+  transform:translateY(24px);transition:transform .22s;
+}
+.sheet-overlay.show .sheet{transform:translateY(0)}
+.sheet-handle{width:34px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 16px}
+.sheet-title{font-size:16px;font-weight:700;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.sheet-title svg{color:var(--link)}
+.notice{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:11px;padding:11px 13px;margin-bottom:14px;
+  font-size:12px;color:var(--hint);line-height:1.6;
+}
+.notice strong{color:var(--link)}
+label{font-size:11px;color:var(--hint);display:block;margin-bottom:5px;margin-top:13px;letter-spacing:.4px;text-transform:uppercase}
+.sheet input,.sheet select{
+  width:100%;background:var(--bg2);border:1px solid var(--border);
+  border-radius:11px;padding:11px 12px;
+  color:var(--text);font-size:14px;outline:none;
+  transition:border-color .2s;font-family:var(--sans);
+}
+.sheet input:focus,.sheet select:focus{border-color:var(--accent)}
+.sheet select option{background:var(--bg)}
+
+/* ── PROGRESS ── */
+.prog-wrap{margin-top:12px;display:none}
+.prog-wrap.show{display:block}
+.prog{height:3px;background:var(--border);border-radius:2px;overflow:hidden;margin-bottom:7px}
+.prog-bar{height:100%;background:var(--accent);border-radius:2px;animation:p 1.6s ease-in-out infinite}
+@keyframes p{0%{width:0%}65%{width:100%}100%{width:100%;opacity:0}}
+.status{font-size:12px;text-align:center;color:var(--hint)}
+.status.ok{color:#3dd68c}.status.err{color:#f06060}
+
+/* ── ACTIONS ── */
+.actions{display:flex;gap:8px;margin-top:16px}
+.btn{
+  flex:1;padding:12px 0;border-radius:12px;border:none;
+  font-size:14px;font-weight:700;font-family:var(--sans);
+  cursor:pointer;transition:all .15s;
+  display:flex;align-items:center;justify-content:center;gap:6px;
+}
+.btn-sec{background:var(--bg2);border:1px solid var(--border);color:var(--hint)}
+.btn-pri{background:var(--accent);color:var(--accent-t);flex:2;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+.btn-pri:active{transform:scale(.97)}
+.btn-pri:disabled{opacity:.4;cursor:not-allowed}
+
+/* ── FAB ── */
+.fab{
+  position:fixed;bottom:0;left:0;right:0;
+  height:64px;background:var(--accent);border:none;
+  color:var(--accent-t);font-size:15px;font-weight:700;font-family:var(--sans);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;gap:9px;
+  z-index:100;letter-spacing:.2px;
+  box-shadow:0 -2px 16px rgba(0,0,0,.2);
+  padding-bottom:env(safe-area-inset-bottom,0);
+}
+.fab:active{opacity:.85}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<div class="nav">
+  <div class="nav-logo">🤖</div>
+  <div class="nav-title">AI Глоссарий</div>
+  <div class="nav-badge">
+    <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 7.2L22 12l-7.6 2.8L12 22l-2.4-7.2L2 12l7.6-2.8z"/></svg>
+    Claude
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="stats">
+  <div class="stat"><div class="stat-n" id="sTotal">0</div><div class="stat-l">Терминов</div></div>
+  <div class="stat"><div class="stat-n" id="sCats">0</div><div class="stat-l">Категорий</div></div>
+  <div class="stat"><div class="stat-n" id="sAI">0</div><div class="stat-l">AI-добавлено</div></div>
+</div>
+
+<!-- SEARCH -->
+<div class="search-wrap">
+  <div class="search">
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6"/><path d="m20 20-3.5-3.5"/></svg>
+    <input id="searchInput" placeholder="Поиск…" oninput="onSearch(this.value)">
+    <button class="clr" id="clrBtn" onclick="clearSearch()">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- FILTERS -->
+<div class="filters" id="filters"></div>
+
+<!-- LIST -->
+<div class="list" id="list"></div>
+
+<!-- FAB -->
+<button class="fab" onclick="openSheet()">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+  Добавить термин через Claude
+</button>
+
+<!-- BOTTOM SHEET -->
+<div class="sheet-overlay" id="overlay" onclick="onBg(event)">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 7.2L22 12l-7.6 2.8L12 22l-2.4-7.2L2 12l7.6-2.8z"/></svg>
+      Добавить через Claude
+    </div>
+
+    <div class="notice">
+      <strong>API-ключ</strong> хранится только локально в вашем браузере и отправляется только на api.anthropic.com
+    </div>
+
+    <label>API-ключ Anthropic</label>
+    <input id="keyInput" type="password" placeholder="sk-ant-…">
+
+    <label>Термин</label>
+    <input id="termInput" placeholder="Hallucination, LoRA, MoE…">
+
+    <label>Категория</label>
+    <select id="catSel">
+      <option>Общее</option>
+      <option>Архитектуры</option>
+      <option>Обучение</option>
+      <option>NLP</option>
+      <option>Компьютерное зрение</option>
+      <option>Агенты</option>
+      <option>Инфраструктура</option>
+    </select>
+
+    <div class="prog-wrap" id="progWrap">
+      <div class="prog"><div class="prog-bar"></div></div>
+      <div class="status" id="statusMsg"></div>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-sec" onclick="closeSheet()">Отмена</button>
+      <button class="btn btn-pri" id="genBtn" onclick="generate()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l2.4 7.2L22 12l-7.6 2.8L12 22l-2.4-7.2L2 12l7.6-2.8z"/></svg>
+        Генерировать
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+// Telegram Web App init
+const tg = window.Telegram?.WebApp;
+if(tg){ tg.ready(); tg.expand(); }
+
+const CATS={
+  "Общее":{color:"#9d8ff0",bg:"rgba(157,143,240,.13)"},
+  "Архитектуры":{color:"#3dd68c",bg:"rgba(61,214,140,.13)"},
+  "Обучение":{color:"#f0a832",bg:"rgba(240,168,50,.13)"},
+  "NLP":{color:"#60b4f0",bg:"rgba(96,180,240,.13)"},
+  "Компьютерное зрение":{color:"#f06090",bg:"rgba(240,96,144,.13)"},
+  "Агенты":{color:"#c86fcd",bg:"rgba(200,111,205,.13)"},
+  "Инфраструктура":{color:"#9090a8",bg:"rgba(144,144,168,.13)"},
+};
+
+const SEED=[
+  {id:1,ru:"Трансформер",en:"Transformer",cat:"Архитектуры",def:"Архитектура нейронных сетей на основе механизма self-attention. Стала основой всех современных LLM — BERT, GPT, Claude.",tags:["attention","seq2seq","GPT"],ai:false},
+  {id:2,ru:"Большая языковая модель",en:"Large Language Model (LLM)",cat:"NLP",def:"Нейронная сеть с миллиардами параметров, обученная на огромных корпусах текста для генерации и понимания речи.",tags:["GPT","Claude","параметры"],ai:false},
+  {id:3,ru:"Дообучение с обратной связью",en:"RLHF",cat:"Обучение",def:"Метод, при котором человеческие оценки используются для выравнивания поведения модели с предпочтениями пользователей.",tags:["выравнивание","PPO","InstructGPT"],ai:false},
+  {id:4,ru:"Векторное встраивание",en:"Embedding",cat:"Общее",def:"Числовое представление объектов в многомерном пространстве, где семантически близкие объекты расположены рядом.",tags:["вектор","семантика","RAG"],ai:false},
+  {id:5,ru:"Генерация с расширенным поиском",en:"RAG",cat:"Архитектуры",def:"Подход, сочетающий поиск по базе знаний с генерацией текста для актуальных и точных ответов.",tags:["поиск","векторная БД","контекст"],ai:false},
+  {id:6,ru:"Промпт-инжиниринг",en:"Prompt Engineering",cat:"Общее",def:"Искусство формулировки запросов к LLM. Включает chain-of-thought, few-shot и структурированные инструкции.",tags:["few-shot","CoT","инструкции"],ai:false},
+];
+
+function load(){try{const s=localStorage.getItem('tg_glossary');return s?JSON.parse(s):null;}catch{return null;}}
+function save(){localStorage.setItem('tg_glossary',JSON.stringify({terms,nextId,aiCount}));}
+
+const saved=load();
+let terms=saved?saved.terms:JSON.parse(JSON.stringify(SEED));
+let nextId=saved?saved.nextId:SEED.length+1;
+let aiCount=saved?saved.aiCount:0;
+let filter="Все", openId=null, searchQ="";
+
+const $=id=>document.getElementById(id);
+
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+function cats(){return["Все",...new Set(terms.map(t=>t.cat))];}
+
+function stats(){
+  $("sTotal").textContent=terms.length;
+  $("sCats").textContent=new Set(terms.map(t=>t.cat)).size;
+  $("sAI").textContent=aiCount;
+}
+
+function renderFilters(){
+  $("filters").innerHTML=cats().map(c=>
+    `<button class="chip${c===filter?' on':''}" onclick="setFilter(${JSON.stringify(c)})">${c}</button>`
+  ).join("");
+}
+
+function setFilter(c){filter=c;renderFilters();renderList();}
+
+function visible(){
+  return terms.filter(t=>{
+    const mc=filter==="Все"||t.cat===filter;
+    const q=searchQ.toLowerCase();
+    const mq=!q||(t.ru.toLowerCase().includes(q)||t.en.toLowerCase().includes(q)||t.def.toLowerCase().includes(q));
+    return mc&&mq;
+  });
+}
+
+function renderList(){
+  const data=visible();
+  if(!data.length){
+    $("list").innerHTML=`<div class="empty"><div class="empty-ico">🔍</div><p>Ничего не найдено</p></div>`;
+    return;
+  }
+  $("list").innerHTML=data.map(t=>{
+    const c=CATS[t.cat]||CATS["Общее"];
+    const isOpen=openId===t.id;
+    return`<div class="card${isOpen?' open':''}" onclick="toggle(${t.id})">
+      <div class="card-head">
+        <div class="dot" style="background:${c.color}"></div>
+        <div class="cname">${esc(t.ru)}${t.ai?`<span class="ai-pill">✦ AI</span>`:''}</div>
+        <span class="cat-pill" style="background:${c.bg};color:${c.color}">${esc(t.cat)}</span>
+        <svg class="chev" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+      </div>
+      ${isOpen?`<div class="card-body">
+        <p class="def">${esc(t.def)}</p>
+        ${t.en?`<p class="en">EN: ${esc(t.en)}</p>`:''}
+        ${t.tags.length?`<div class="tags">${t.tags.map(tg=>`<span class="tag">${esc(tg)}</span>`).join('')}</div>`:''}
+      </div>`:''}
+    </div>`;
+  }).join("");
+}
+
+function toggle(id){
+  openId=openId===id?null:id;
+  if(tg) tg.HapticFeedback?.impactOccurred('light');
+  renderList();
+}
+
+function onSearch(v){
+  searchQ=v;
+  $("clrBtn").classList.toggle('show',!!v);
+  renderList();
+}
+function clearSearch(){$("searchInput").value='';onSearch('');}
+
+function openSheet(){
+  const k=localStorage.getItem('tg_glossary_key');
+  if(k) $("keyInput").value=k;
+  $("overlay").classList.add('show');
+  setTimeout(()=>$("termInput").focus(),120);
+  if(tg) tg.HapticFeedback?.impactOccurred('medium');
+}
+function closeSheet(){
+  $("overlay").classList.remove('show');
+  $("termInput").value='';
+  $("progWrap").classList.remove('show');
+  $("genBtn").disabled=false;
+  $("statusMsg").textContent='';
+}
+function onBg(e){if(e.target===$("overlay"))closeSheet();}
+
+$("termInput").addEventListener('keydown',e=>{if(e.key==='Enter')generate();});
+
+async function generate(){
+  const term=$("termInput").value.trim();
+  if(!term)return;
+  const key=$("keyInput").value.trim();
+  if(key) localStorage.setItem('tg_glossary_key',key);
+  const apiKey=key||localStorage.getItem('tg_glossary_key')||'';
+  if(!apiKey){ setStatus('Введите API-ключ Anthropic','err'); $("progWrap").classList.add('show'); return; }
+  const cat=$("catSel").value;
+  $("genBtn").disabled=true;
+  $("progWrap").classList.add('show');
+  setStatus('Claude генерирует определение…','');
+  try{
+    const resp=await fetch("https://api.anthropic.com/v1/messages",{
+      method:"POST",
+      headers:{"Content-Type":"application/json","x-api-key":apiKey,"anthropic-version":"2023-06-01"},
+      body:JSON.stringify({
+        model:"claude-sonnet-4-20250514",max_tokens:800,
+        messages:[{role:"user",content:`AI-глоссарий на русском. Термин: "${term}", категория: "${cat}".
+Только JSON без markdown:
+{"ru":"название","en":"English name","def":"определение 1-3 предложения","tags":["тег1","тег2","тег3"]}`}]
+      })
+    });
+    if(!resp.ok){const e=await resp.json();throw new Error(e.error?.message||resp.statusText);}
+    const data=await resp.json();
+    const p=JSON.parse(data.content.map(i=>i.text||'').join('').replace(/```json|```/g,'').trim());
+    terms.unshift({id:nextId++,ru:p.ru||term,en:p.en||'',cat,def:p.def||'',tags:Array.isArray(p.tags)?p.tags:[],ai:true});
+    aiCount++;
+    save();
+    setStatus('✓ Добавлено!','ok');
+    if(tg) tg.HapticFeedback?.notificationOccurred('success');
+    stats(); renderFilters(); renderList();
+    setTimeout(closeSheet,900);
+  }catch(e){
+    setStatus('Ошибка: '+e.message,'err');
+    if(tg) tg.HapticFeedback?.notificationOccurred('error');
+    $("genBtn").disabled=false;
+  }
+}
+
+function setStatus(msg,cls){
+  const el=$("statusMsg");
+  el.textContent=msg;
+  el.className='status'+(cls?' '+cls:'');
+}
+
+stats(); renderFilters(); renderList();
+</script>
+</body>
+</html>
